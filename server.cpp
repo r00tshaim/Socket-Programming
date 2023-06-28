@@ -54,8 +54,40 @@ int main() {
         if (send(clientSocket, message, std::strlen(message), 0) == -1) {
             std::cerr << "Failed to send message to client." << std::endl;
         }
-	sleep(5);
 
+	char buffer[1024];
+    	std::memset(buffer, 0, sizeof(buffer));
+	
+	while (true) {
+        	if (recv(clientSocket, buffer, sizeof(buffer) - 1, 0) == -1) {
+            		std::cerr << "Failed to receive message from client." << std::endl;
+            		break;
+        	}
+
+        	std::cout << "Client says: " << buffer << std::endl;
+
+        	if (std::strcmp(buffer, "bye") == 0) {
+			//client requesting disconnect
+            		std::cout << "Client initiated disconnect." << std::endl;
+			send(clientSocket, buffer, std::strlen(buffer), 0);
+            		break;
+        	}
+
+        	std::memset(buffer, 0, sizeof(buffer));
+
+        	std::cout << "Server says: ";
+        	std::cin.getline(buffer, sizeof(buffer));
+
+        	if (send(clientSocket, buffer, std::strlen(buffer), 0) == -1) {
+            		std::cerr << "Failed to send message to client." << std::endl;
+            		break;
+        	} else {
+			//message is sent to client, we can clear the buffer now
+			std::memset(buffer, 0, sizeof(buffer));
+		}
+
+    	}
+	sleep(5);
 	close(clientSocket);
     }
 
